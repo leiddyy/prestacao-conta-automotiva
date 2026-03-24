@@ -8,7 +8,8 @@ import {
   AlertTriangle,
   Search,
   CheckCircle2,
-  Loader2
+  Loader2,
+  Download
 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import './App.css'
@@ -89,13 +90,35 @@ function App() {
     }
   };
 
+  // Helper to export CSV
+  const exportToCSV = (data: any[], filename: string) => {
+    if (data.length === 0) return;
+    
+    // Header setup based on provided keys
+    const headers = Object.keys(data[0]).join(';');
+    const rows = data.map(obj => 
+      Object.values(obj)
+        .map(val => (typeof val === 'string' ? `"${val}"` : val))
+        .join(';')
+    ).join('\n');
+
+    // Add BOM for UTF-8 Excel support (Crucial for accents)
+    const csvContent = "\uFEFF" + headers + "\n" + rows;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${filename}_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Calculations
   const stockLevels = useMemo(() => {
     const levels: Record<string, number> = {};
     parts.forEach(p => levels[p.id] = 0);
     transactions.forEach(t => {
-      // Find the internal original ID mapping if date string differs
-      // but here we use the actual DB IDs so it's fine
       if (t.type === 'IN') levels[t.partId] = (levels[t.partId] || 0) + t.quantity;
       else levels[t.partId] = (levels[t.partId] || 0) - t.quantity;
     });
@@ -104,7 +127,7 @@ function App() {
 
   const stats = useMemo(() => {
     const totalItems = Object.values(stockLevels).reduce((a, b) => a + b, 0);
-    const lowStock = parts.filter(p => stockLevels[p.id] <= p.minStock).length;
+    const lowStock = parts.filter(p => (stockLevels[p.id] || 0) <= p.minStock).length;
     return { totalItems, lowStock, totalParts: parts.length };
   }, [parts, stockLevels]);
 
@@ -293,7 +316,25 @@ function App() {
       {activeTab === 'inventory' && (
         <div className="card">
           <div className="card-header">
-            <h2>Inventário Atual</h2>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+               <h2>Inventário Atual</h2>
+               <button 
+                onClick={() => exportToCSV(
+                  parts.map(p => ({
+                    Nome: p.name,
+                    SKU: p.sku,
+                    Categoria: p.category,
+                    Estoque: stockLevels[p.id] || 0,
+                    EstoqueMinimo: p.minStock
+                  })), 
+                  'relatorio-estoque'
+                )}
+                className="tab-btn" 
+                style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--border)', fontSize: '0.8rem' }}
+               >
+                 <Download size={14} /> Exportar Excel
+               </button>
+            </div>
             <div style={{ position: 'relative' }}>
               <Search size={16} style={{ position: 'absolute', left: '10', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
@@ -349,7 +390,25 @@ function App() {
       {activeTab === 'transactions' && (
         <div className="card">
           <div className="card-header">
-            <h2>Histórico de Movimentações</h2>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+               <h2>Histórico</h2>
+               <button 
+                onClick={() => exportToCSV(
+                  transactions.map(t => ({
+                    Data: t.date,
+                    Peça: parts.find(p => p.id === t.partId)?.name || 'Desconhecida',
+                    Tipo: t.type === 'IN' ? 'Entrada (+)' : 'Saída (-)',
+                    Quantidade: t.quantity,
+                    Observação: t.reason
+                  })), 
+                  'historico-movimentacoes'
+                )}
+                className="tab-btn" 
+                style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--border)', fontSize: '0.8rem' }}
+               >
+                 <Download size={14} /> Exportar Excel
+               </button>
+            </div>
           </div>
           <div className="card-content">
             {transactions.length === 0 ? (
