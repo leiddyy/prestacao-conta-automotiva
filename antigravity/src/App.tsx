@@ -7,9 +7,16 @@ import {
   History,
   AlertTriangle,
   Search,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from 'lucide-react'
+import { createClient } from '@supabase/supabase-js'
 import './App.css'
+
+// Initialize Supabase
+const supabaseUrl = 'https://gzauhxnjkwplshthrfcq.supabase.co'
+const supabaseKey = 'sb_publishable_Wstl7HmG0LiXbJxD9rY27A_tcHf__4N'
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 interface Part {
   id: string;
@@ -32,33 +39,65 @@ type Tab = 'dashboard' | 'inventory' | 'transactions' | 'register';
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
-  const [parts, setParts] = useState<Part[]>(() => {
-    const saved = localStorage.getItem('auto_parts');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem('auto_transactions');
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  const [parts, setParts] = useState<Part[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Perisistence
+  // Fetch data from Supabase
   useEffect(() => {
-    localStorage.setItem('auto_parts', JSON.stringify(parts));
-  }, [parts]);
+    fetchData();
+  }, []);
 
-  useEffect(() => {
-    localStorage.setItem('auto_transactions', JSON.stringify(transactions));
-  }, [transactions]);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const { data: partsData, error: partsError } = await supabase
+        .from('parts')
+        .select('*')
+        .order('name');
+      
+      const { data: transData, error: transError } = await supabase
+        .from('transactions')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (partsError || transError) throw partsError || transError;
+
+      // Map Supabase data (snake_case) to our interface (camelCase)
+      setParts(partsData.map(p => ({
+        id: p.id,
+        name: p.name,
+        sku: p.sku,
+        category: p.category,
+        minStock: p.min_stock
+      })));
+
+      setTransactions(transData.map(t => ({
+        id: t.id,
+        partId: t.part_id,
+        type: t.type,
+        quantity: t.quantity,
+        date: new Date(t.date).toLocaleString('pt-BR'),
+        reason: t.reason
+      })));
+    } catch (error: any) {
+      console.error('Error fetching data:', error.message);
+      alert('Erro ao carregar dados do servidor.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Calculations
   const stockLevels = useMemo(() => {
     const levels: Record<string, number> = {};
     parts.forEach(p => levels[p.id] = 0);
     transactions.forEach(t => {
-      if (t.type === 'IN') levels[t.partId] += t.quantity;
-      else levels[t.partId] -= t.quantity;
+      // Find the internal original ID mapping if date string differs
+      // but here we use the actual DB IDs so it's fine
+      if (t.type === 'IN') levels[t.partId] = (levels[t.partId] || 0) + t.quantity;
+      else levels[t.partId] = (levels[t.partId] || 0) - t.quantity;
     });
     return levels;
   }, [parts, transactions]);
@@ -75,39 +114,82 @@ function App() {
   );
 
   // Actions
-  const addPart = (e: React.FormEvent<HTMLFormElement>) => {
+  const addPart = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const newPart: Part = {
-      id: crypto.randomUUID(),
+    
+    const newPartData = {
       name: formData.get('name') as string,
       sku: formData.get('sku') as string,
       category: formData.get('category') as string,
-      minStock: Number(formData.get('minStock')),
+      min_stock: Number(formData.get('minStock')),
     };
-    setParts([...parts, newPart]);
-    setActiveTab('inventory');
+
+    const { data, error } = await supabase
+      .from('parts')
+      .insert([newPartData])
+      .select();
+
+    if (error) {
+      alert('Erro ao cadastrar peça: ' + error.message);
+    } else if (data) {
+      const p = data[0];
+      setParts([...parts, {
+        id: p.id,
+        name: p.name,
+        sku: p.sku,
+        category: p.category,
+        minStock: p.min_stock
+      }]);
+      setActiveTab('inventory');
+      (e.target as HTMLFormElement).reset();
+    }
   };
 
-  const recordTransaction = (e: React.FormEvent<HTMLFormElement>) => {
+  const recordTransaction = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const type = formData.get('type') as 'IN' | 'OUT';
     const quantity = Number(formData.get('quantity'));
     const partId = formData.get('partId') as string;
 
-    const newTransaction: Transaction = {
-      id: crypto.randomUUID(),
-      partId,
+    const newTransData = {
+      part_id: partId,
       type,
       quantity,
-      date: new Date().toLocaleString('pt-BR'),
       reason: formData.get('reason') as string,
     };
-    setTransactions([newTransaction, ...transactions]);
-    e.currentTarget.reset();
-    alert('Movimentação registrada com sucesso!');
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert([newTransData])
+      .select();
+
+    if (error) {
+      alert('Erro ao registrar movimentação: ' + error.message);
+    } else if (data) {
+      const t = data[0];
+      setTransactions([{
+        id: t.id,
+        partId: t.part_id,
+        type: t.type as 'IN' | 'OUT',
+        quantity: t.quantity,
+        date: new Date(t.date).toLocaleString('pt-BR'),
+        reason: t.reason
+      }, ...transactions]);
+      (e.target as HTMLFormElement).reset();
+      alert('Movimentação registrada com sucesso!');
+    }
   };
+
+  if (loading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '1rem' }}>
+        <Loader2 className="animate-spin" size={48} color="var(--primary)" />
+        <p>Conectando ao banco de dados...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">
@@ -177,6 +259,7 @@ function App() {
                   <div className="form-group">
                     <label>Peça</label>
                     <select name="partId" required>
+                      <option value="">Selecione uma peça...</option>
                       {parts.map(p => (
                         <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
                       ))}
@@ -238,7 +321,7 @@ function App() {
                 </thead>
                 <tbody>
                   {filteredParts.map(p => {
-                    const current = stockLevels[p.id];
+                    const current = stockLevels[p.id] || 0;
                     const isLow = current <= p.minStock;
                     return (
                       <tr key={p.id}>
