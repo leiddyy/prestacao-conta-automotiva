@@ -38,13 +38,19 @@ body {
 #root {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  #root {
+    padding: 1rem;
+  }
 }
 
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .app-header {
@@ -53,6 +59,14 @@ body {
   align-items: center;
   border-bottom: 2px solid var(--border);
   padding-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .title-group h1 {
@@ -65,18 +79,31 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+@media (max-width: 600px) {
+  .title-group h1 {
+    font-size: 1.5rem;
+  }
+}
+
 .tabs-nav {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   background: var(--bg-card);
   padding: 0.5rem;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  max-width: 100%;
+}
+
+.tabs-nav::-webkit-scrollbar {
+  display: none; /* Safari/Chrome */
 }
 
 .tab-btn {
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1rem;
   border: none;
   background: none;
   border-radius: calc(var(--radius) - 4px);
@@ -87,6 +114,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .tab-btn.active {
@@ -96,17 +124,30 @@ body {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
+}
+
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
 }
 
 .stat-card {
   background: var(--bg-card);
-  padding: 1.5rem;
+  padding: 1.25rem;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   transition: transform 0.2s, box-shadow 0.2s;
+}
+
+@media (max-width: 600px) {
+  .stat-card {
+    padding: 1rem;
+  }
 }
 
 .stat-card:hover {
@@ -116,15 +157,22 @@ body {
 
 .stat-card .label {
   color: var(--text-muted);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  line-height: 1.2;
 }
 
 .stat-card .value {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   margin-top: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .stat-card .value {
+    font-size: 1.5rem;
+  }
 }
 
 .data-section {
@@ -147,46 +195,56 @@ body {
 }
 
 .card-header {
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.02);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .card-header h2 {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   margin: 0;
 }
 
 .card-content {
-  padding: 1.5rem;
+  padding: 1.25rem;
+  overflow-x: auto;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px; /* Force scrollable on small mobile */
 }
 
 th {
   text-align: left;
   color: var(--text-muted);
   font-weight: 600;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
 }
 
 td {
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
 }
 
 .badge {
-  padding: 0.25rem 0.75rem;
+  padding: 0.2rem 0.6rem;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
 }
 
 .badge-in {
@@ -202,29 +260,31 @@ td {
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 label {
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
 input,
 select,
 textarea {
-  padding: 0.75rem;
+  padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--bg-main);
+  background: #fff;
   color: var(--text-main);
   font-family: inherit;
+  font-size: 0.95rem;
 }
 
 button.primary {
@@ -236,6 +296,13 @@ button.primary {
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s;
+  width: 100%; /* Full width on mobile forms */
+}
+
+@media (min-width: 768px) {
+  button.primary {
+    width: auto;
+  }
 }
 
 button.primary:hover {
@@ -244,6 +311,7 @@ button.primary:hover {
 
 .empty-state {
   text-align: center;
-  padding: 3rem;
+  padding: 2.5rem;
   color: var(--text-muted);
+  font-style: italic;
 }
