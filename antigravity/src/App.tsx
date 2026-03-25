@@ -12,7 +12,8 @@ import {
   Download,
   LogOut,
   Mail,
-  Lock
+  Lock,
+  Trash2
 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import type { Session } from '@supabase/supabase-js'
@@ -103,6 +104,29 @@ function App() {
       console.error('Error:', error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deletePart = async (id: string) => {
+    if (!confirm('Tem certeza? Isso apagará a peça e todo o histórico de movimentações dela.')) return;
+    
+    const { error } = await supabase.from('parts').delete().eq('id', id);
+    if (error) {
+      alert('Erro ao excluir: ' + error.message);
+    } else {
+      setParts(parts.filter(p => p.id !== id));
+      setTransactions(transactions.filter(t => t.partId !== id));
+    }
+  };
+
+  const deleteTransaction = async (id: string) => {
+    if (!confirm('Excluir este lançamento?')) return;
+    
+    const { error } = await supabase.from('transactions').delete().eq('id', id);
+    if (error) {
+      alert('Erro ao excluir: ' + error.message);
+    } else {
+      setTransactions(transactions.filter(t => t.id !== id));
     }
   };
 
@@ -322,11 +346,22 @@ function App() {
           </div>
           <div className="card-content">
             {filteredParts.length === 0 ? <p className="empty-state">Vazio.</p> : (
-              <table><thead><tr><th>Peça</th><th>SKU</th><th>Categoria</th><th>Qtd</th><th>Status</th></tr></thead>
+              <table><thead><tr><th>Peça</th><th>SKU</th><th>Categoria</th><th>Qtd</th><th>Status</th><th>Ações</th></tr></thead>
                 <tbody>{filteredParts.map(p => {
                     const current = stockLevels[p.id] || 0;
                     const isLow = current <= p.minStock;
-                    return (<tr key={p.id}><td><strong>{p.name}</strong></td><td>{p.sku}</td><td>{p.category}</td><td style={{ fontWeight: 600 }}>{current}</td><td>{isLow ? <span className="badge badge-out"><AlertTriangle size={12} /> Baixo</span> : <span className="badge badge-in"><CheckCircle2 size={12} /> OK</span>}</td></tr>);
+                    return (<tr key={p.id}>
+                      <td><strong>{p.name}</strong></td>
+                      <td>{p.sku}</td>
+                      <td>{p.category}</td>
+                      <td style={{ fontWeight: 600 }}>{current}</td>
+                      <td>{isLow ? <span className="badge badge-out"><AlertTriangle size={12} /> Baixo</span> : <span className="badge badge-in"><CheckCircle2 size={12} /> OK</span>}</td>
+                      <td>
+                        <button onClick={() => deletePart(p.id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '4px' }}>
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>);
                   })}</tbody>
               </table>
             )}
@@ -344,10 +379,21 @@ function App() {
           </div>
           <div className="card-content">
             {transactions.length === 0 ? <p className="empty-state">Vazio.</p> : (
-              <table><thead><tr><th>Data</th><th>Peça</th><th>Tipo</th><th>Qtd</th><th>Obs</th></tr></thead>
+              <table><thead><tr><th>Data</th><th>Peça</th><th>Tipo</th><th>Qtd</th><th>Obs</th><th>Ações</th></tr></thead>
                 <tbody>{transactions.map(t => {
                     const part = parts.find(p => p.id === t.partId);
-                    return (<tr key={t.id}><td>{t.date}</td><td>{part?.name || 'Excluída'}</td><td><span className={`badge ${t.type === 'IN' ? 'badge-in' : 'badge-out'}`}>{t.type === 'IN' ? 'ENTRADA' : 'SAÍDA'}</span></td><td>{t.quantity}</td><td>{t.reason}</td></tr>);
+                    return (<tr key={t.id}>
+                      <td>{t.date}</td>
+                      <td>{part?.name || 'Excluída'}</td>
+                      <td><span className={`badge ${t.type === 'IN' ? 'badge-in' : 'badge-out'}`}>{t.type === 'IN' ? 'ENTRADA' : 'SAÍDA'}</span></td>
+                      <td>{t.quantity}</td>
+                      <td>{t.reason}</td>
+                      <td>
+                        <button onClick={() => deleteTransaction(t.id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '4px' }}>
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>);
                   })}</tbody>
               </table>
             )}
