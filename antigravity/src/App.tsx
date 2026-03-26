@@ -76,7 +76,7 @@ function App() {
         .from('parts')
         .select('*')
         .order('name');
-      
+
       const { data: transData, error: transError } = await supabase
         .from('transactions')
         .select('*')
@@ -109,7 +109,7 @@ function App() {
 
   const deletePart = async (id: string) => {
     if (!confirm('Tem certeza? Isso apagará a peça e todo o histórico de movimentações dela.')) return;
-    
+
     const { error } = await supabase.from('parts').delete().eq('id', id);
     if (error) {
       alert('Erro ao excluir: ' + error.message);
@@ -121,7 +121,7 @@ function App() {
 
   const deleteTransaction = async (id: string) => {
     if (!confirm('Excluir este lançamento?')) return;
-    
+
     const { error } = await supabase.from('transactions').delete().eq('id', id);
     if (error) {
       alert('Erro ao excluir: ' + error.message);
@@ -163,7 +163,7 @@ function App() {
   const exportToCSV = (data: any[], filename: string) => {
     if (data.length === 0) return;
     const headers = Object.keys(data[0]).join(';');
-    const rows = data.map(obj => 
+    const rows = data.map(obj =>
       Object.values(obj).map(val => (typeof val === 'string' ? `"${val}"` : val)).join(';')
     ).join('\n');
 
@@ -232,7 +232,7 @@ function App() {
     else if (data) {
       const t = data[0];
       setTransactions([{
-        id: t.id, partId: t.part_id, type: t.type as 'IN' | 'OUT', quantity: t.quantity, 
+        id: t.id, partId: t.part_id, type: t.type as 'IN' | 'OUT', quantity: t.quantity,
         date: new Date(t.date).toLocaleString('pt-BR'), reason: t.reason
       }, ...transactions]);
       (e.target as HTMLFormElement).reset();
@@ -249,7 +249,7 @@ function App() {
             <h1 style={{ color: 'var(--primary)', marginBottom: '0.5rem' }}>Acesso Restrito</h1>
             <p style={{ color: 'var(--text-muted)' }}>{authMode === 'login' ? 'Faça login para continuar' : 'Crie sua conta administrativa'}</p>
           </div>
-          
+
           <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div className="form-group">
               <label><Mail size={14} style={{ verticalAlign: 'middle', marginRight: '6px' }} /> E-mail</label>
@@ -259,19 +259,23 @@ function App() {
               <label><Lock size={14} style={{ verticalAlign: 'middle', marginRight: '6px' }} /> Senha</label>
               <input type="password" name="password" placeholder="••••••••" required />
             </div>
-            
+
             <button type="submit" className="primary" disabled={authLoading} style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
               {authLoading ? <Loader2 className="animate-spin" size={18} /> : (authMode === 'login' ? 'Entrar no Sistema' : 'Cadastrar agora')}
             </button>
           </form>
 
           <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-            <button 
+            <button
               onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
               style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}
             >
               {authMode === 'login' ? 'Não tem conta? Cadastre-se' : 'Já tem conta? Volte ao login'}
             </button>
+          </div>
+
+          <div style={{ marginTop: '2rem', borderTop: '1px solid var(--border)', paddingTop: '1rem', textAlign: 'center' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Developed by Leidiane Silva • {new Date().getFullYear()}</p>
           </div>
         </div>
       </div>
@@ -336,8 +340,8 @@ function App() {
         <div className="card">
           <div className="card-header">
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-               <h2>Inventário Atual</h2>
-               <button onClick={() => exportToCSV(parts.map(p => ({ Nome: p.name, SKU: p.sku, Categoria: p.category, Estoque: stockLevels[p.id] || 0, Min: p.minStock })), 'estoque')} className="tab-btn" style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--border)', fontSize: '0.8rem' }}><Download size={14} /> Excel</button>
+              <h2>Inventário Atual</h2>
+              <button onClick={() => exportToCSV(parts.map(p => ({ Nome: p.name, SKU: p.sku, Categoria: p.category, Estoque: stockLevels[p.id] || 0, Min: p.minStock })), 'estoque')} className="tab-btn" style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--border)', fontSize: '0.8rem' }}><Download size={14} /> Excel</button>
             </div>
             <div style={{ position: 'relative' }}>
               <Search size={16} style={{ position: 'absolute', left: '10', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -348,21 +352,21 @@ function App() {
             {filteredParts.length === 0 ? <p className="empty-state">Vazio.</p> : (
               <table><thead><tr><th>Peça</th><th>SKU</th><th>Categoria</th><th>Qtd</th><th>Status</th><th>Ações</th></tr></thead>
                 <tbody>{filteredParts.map(p => {
-                    const current = stockLevels[p.id] || 0;
-                    const isLow = current <= p.minStock;
-                    return (<tr key={p.id}>
-                      <td><strong>{p.name}</strong></td>
-                      <td>{p.sku}</td>
-                      <td>{p.category}</td>
-                      <td style={{ fontWeight: 600 }}>{current}</td>
-                      <td>{isLow ? <span className="badge badge-out"><AlertTriangle size={12} /> Baixo</span> : <span className="badge badge-in"><CheckCircle2 size={12} /> OK</span>}</td>
-                      <td>
-                        <button onClick={() => deletePart(p.id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '4px' }}>
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>);
-                  })}</tbody>
+                  const current = stockLevels[p.id] || 0;
+                  const isLow = current <= p.minStock;
+                  return (<tr key={p.id}>
+                    <td><strong>{p.name}</strong></td>
+                    <td>{p.sku}</td>
+                    <td>{p.category}</td>
+                    <td style={{ fontWeight: 600 }}>{current}</td>
+                    <td>{isLow ? <span className="badge badge-out"><AlertTriangle size={12} /> Baixo</span> : <span className="badge badge-in"><CheckCircle2 size={12} /> OK</span>}</td>
+                    <td>
+                      <button onClick={() => deletePart(p.id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '4px' }}>
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>);
+                })}</tbody>
               </table>
             )}
           </div>
@@ -373,28 +377,28 @@ function App() {
         <div className="card">
           <div className="card-header">
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-               <h2>Histórico</h2>
-               <button onClick={() => exportToCSV(transactions.map(t => ({ Data: t.date, Peça: parts.find(p => p.id === t.partId)?.name || '?', Tipo: t.type, Qtd: t.quantity, Obs: t.reason })), 'historico')} className="tab-btn" style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--border)', fontSize: '0.8rem' }}><Download size={14} /> Excel</button>
+              <h2>Histórico</h2>
+              <button onClick={() => exportToCSV(transactions.map(t => ({ Data: t.date, Peça: parts.find(p => p.id === t.partId)?.name || '?', Tipo: t.type, Qtd: t.quantity, Obs: t.reason })), 'historico')} className="tab-btn" style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--border)', fontSize: '0.8rem' }}><Download size={14} /> Excel</button>
             </div>
           </div>
           <div className="card-content">
             {transactions.length === 0 ? <p className="empty-state">Vazio.</p> : (
               <table><thead><tr><th>Data</th><th>Peça</th><th>Tipo</th><th>Qtd</th><th>Obs</th><th>Ações</th></tr></thead>
                 <tbody>{transactions.map(t => {
-                    const part = parts.find(p => p.id === t.partId);
-                    return (<tr key={t.id}>
-                      <td>{t.date}</td>
-                      <td>{part?.name || 'Excluída'}</td>
-                      <td><span className={`badge ${t.type === 'IN' ? 'badge-in' : 'badge-out'}`}>{t.type === 'IN' ? 'ENTRADA' : 'SAÍDA'}</span></td>
-                      <td>{t.quantity}</td>
-                      <td>{t.reason}</td>
-                      <td>
-                        <button onClick={() => deleteTransaction(t.id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '4px' }}>
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>);
-                  })}</tbody>
+                  const part = parts.find(p => p.id === t.partId);
+                  return (<tr key={t.id}>
+                    <td>{t.date}</td>
+                    <td>{part?.name || 'Excluída'}</td>
+                    <td><span className={`badge ${t.type === 'IN' ? 'badge-in' : 'badge-out'}`}>{t.type === 'IN' ? 'ENTRADA' : 'SAÍDA'}</span></td>
+                    <td>{t.quantity}</td>
+                    <td>{t.reason}</td>
+                    <td>
+                      <button onClick={() => deleteTransaction(t.id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '4px' }}>
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>);
+                })}</tbody>
               </table>
             )}
           </div>
@@ -415,6 +419,10 @@ function App() {
           </div>
         </div>
       )}
+
+      <footer className="app-footer">
+        <p>© {new Date().getFullYear()} Leidiane Silva. Todos os direitos reservados.</p>
+      </footer>
     </div>
   )
 }
