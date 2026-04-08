@@ -342,3 +342,14 @@ button.primary:hover {
   color: var(--text-muted);
   font-size: 0.85rem;
 }
+
+.btn-excel {
+  background-color: #1D6F42 !important;
+  color: white !important;
+  border: none !important;
+  transition: background-color 0.2s;
+}
+
+.btn-excel:hover {
+  background-color: #155231 !important;
+}

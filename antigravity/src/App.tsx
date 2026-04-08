@@ -341,7 +341,7 @@ function App() {
           <div className="card-header">
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
               <h2>Inventário Atual</h2>
-              <button onClick={() => exportToCSV(parts.map(p => ({ Nome: p.name, SKU: p.sku, Categoria: p.category, Estoque: stockLevels[p.id] || 0, Min: p.minStock })), 'estoque')} className="tab-btn" style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--border)', fontSize: '0.8rem' }}><Download size={14} /> Excel</button>
+              <button onClick={() => exportToCSV(parts.map(p => ({ Nome: p.name, SKU: p.sku, Categoria: p.category, Estoque: stockLevels[p.id] || 0, Min: p.minStock })), 'estoque')} className="tab-btn btn-excel" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}><Download size={14} /> Excel</button>
             </div>
             <div style={{ position: 'relative' }}>
               <Search size={16} style={{ position: 'absolute', left: '10', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -378,7 +378,7 @@ function App() {
           <div className="card-header">
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
               <h2>Histórico</h2>
-              <button onClick={() => exportToCSV(transactions.map(t => ({ Data: t.date, Peça: parts.find(p => p.id === t.partId)?.name || '?', Tipo: t.type, Qtd: t.quantity, Obs: t.reason })), 'historico')} className="tab-btn" style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--border)', fontSize: '0.8rem' }}><Download size={14} /> Excel</button>
+              <button onClick={() => exportToCSV(transactions.map(t => ({ Data: t.date, Peça: parts.find(p => p.id === t.partId)?.name || '?', Tipo: t.type, Qtd: t.quantity, Obs: t.reason })), 'historico')} className="tab-btn btn-excel" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}><Download size={14} /> Excel</button>
             </div>
           </div>
           <div className="card-content">
