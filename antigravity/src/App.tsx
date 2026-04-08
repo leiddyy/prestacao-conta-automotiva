@@ -294,13 +294,16 @@ function App() {
   return (
     <div className="dashboard-container">
       <header className="app-header">
-        <div className="title-group">
-          <h1>Sistema de Prestação</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{session.user.email}</span>
-            <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
-              <LogOut size={16} /> Sair
-            </button>
+        <div className="brand-group">
+          <img src="/logo-dia.png" alt="Dia Distribuidora" className="app-logo" />
+          <div className="title-group">
+            <h1>Sistema de Prestação</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{session.user.email}</span>
+              <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
+                <LogOut size={16} /> Sair
+              </button>
+            </div>
           </div>
         </div>
         <nav className="tabs-nav">

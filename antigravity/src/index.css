@@ -1,6 +1,6 @@
 :root {
-  --primary: #6366f1;
-  --secondary: #a855f7;
+  --primary: #1a1a5e;
+  --secondary: #f8b619;
   --bg-main: #f8fafc;
   --bg-card: #ffffff;
   --text-main: #1e293b;
@@ -67,6 +67,18 @@ body {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.app-logo {
+  height: 50px;
+  width: auto;
+  border-radius: 4px;
 }
 
 .title-group h1 {
