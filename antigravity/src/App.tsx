@@ -246,6 +246,7 @@ function App() {
       <div className="auth-container" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)' }}>
         <div className="card" style={{ width: '100%', maxWidth: '400px', padding: '2rem' }}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <img src="/logo-dia.png" alt="Dia Distribuidora" style={{ height: '60px', marginBottom: '1.5rem', borderRadius: '8px' }} />
             <h1 style={{ color: 'var(--primary)', marginBottom: '0.5rem' }}>Acesso Restrito</h1>
             <p style={{ color: 'var(--text-muted)' }}>{authMode === 'login' ? 'Faça login para continuar' : 'Crie sua conta administrativa'}</p>
           </div>

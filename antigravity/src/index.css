@@ -82,13 +82,21 @@ body {
 }
 
 .title-group h1 {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.2rem;
+  font-weight: 800;
   margin: 0;
   background: linear-gradient(to right, var(--primary), var(--secondary));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.title-group span {
+  color: var(--text-muted) !important;
+}
+
+.title-group button {
+  color: var(--danger) !important;
 }
 
 @media (max-width: 600px) {
@@ -132,8 +140,14 @@ body {
 }
 
 .tab-btn.active {
-  background: var(--primary);
-  color: white;
+  background: var(--secondary);
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(248, 182, 25, 0.3);
+}
+
+.tab-btn:hover:not(.active) {
+  background: rgba(26, 26, 94, 0.05);
+  color: var(--primary);
 }
 
 .stats-grid {
@@ -311,22 +325,21 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-  /* Cor suave baseada no primário */
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 4px rgba(248, 182, 25, 0.2);
 }
 
 button.primary {
-  background: var(--primary);
-  color: white;
+  background: var(--secondary);
+  color: var(--primary);
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(248, 182, 25, 0.2);
   width: 100%;
-  /* Full width on mobile forms */
 }
 
 @media (min-width: 768px) {
@@ -336,7 +349,9 @@ button.primary {
 }
 
 button.primary:hover {
-  opacity: 0.9;
+  background: #e5a716;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(248, 182, 25, 0.4);
 }
 
 .empty-state {
