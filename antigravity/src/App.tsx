@@ -13,7 +13,8 @@ import {
   LogOut,
   Mail,
   Lock,
-  Trash2
+  Trash2,
+  User
 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import type { Session } from '@supabase/supabase-js'
@@ -142,7 +143,14 @@ function App() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const fullName = formData.get('fullName') as string;
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: { full_name: fullName }
+          }
+        });
         if (error) throw error;
         alert('Confirme seu e-mail (se ativado) ou faça login agora!');
         setAuthMode('login');
@@ -256,6 +264,14 @@ function App() {
               <label><Mail size={14} style={{ verticalAlign: 'middle', marginRight: '6px' }} /> E-mail</label>
               <input type="email" name="email" placeholder="seu@email.com" required />
             </div>
+
+            {authMode === 'register' && (
+              <div className="form-group">
+                <label><User size={14} style={{ verticalAlign: 'middle', marginRight: '6px' }} /> Nome e Sobrenome</label>
+                <input type="text" name="fullName" placeholder="Ex: Maria Silva" required />
+              </div>
+            )}
+
             <div className="form-group">
               <label><Lock size={14} style={{ verticalAlign: 'middle', marginRight: '6px' }} /> Senha</label>
               <input type="password" name="password" placeholder="••••••••" required />
@@ -300,7 +316,9 @@ function App() {
           <div className="title-group">
             <h1>Sistema de Prestação</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{session.user.email}</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+              {session.user.user_metadata?.full_name || session.user.email}
+            </span>
               <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
                 <LogOut size={16} /> Sair
               </button>
